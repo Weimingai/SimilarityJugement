@@ -1,0 +1,45 @@
+//0203_130.Josephus问题.c
+#include <stdio.h>
+#include <stdlib.h>
+#define ElemFormat 1  //数据类型分类，用户类型ElemType为整型，故选1
+typedef int ElemType;
+#include "应用数据结构预定义.h"
+#include "算法2.x.单链表.h"
+
+void main(void)
+{
+	int num = 0, div, count; //游戏总人数，报数间隔，计数器
+	LNode *p, *t=NULL; //此处t必须赋值，否则编译失败，想想看为什么？
+	LinkList *L = NULL; //定义链表名称
+	L = InitLinkList(L);	//初始化空表
+	printf("请输入参加游戏的人数（不少于3人）：");
+	while (scanf("%d", &num) == 0 || num < 3) printf("请输入参加游戏的人数（不少于3人）：");
+	printf("\n请输入报数的间隔（不小于2）：");
+	while (scanf("%d", &div) == 0 || div < 2) printf("\n请输入报数的间隔（不小于2）：");
+	for (count = 1; count <= num; count++)//构建链表
+	{
+		p = MakeLNode(count);
+		Append(L, p);
+	}
+	//printf("\n所有入列者报数：\n");  //测试用语句
+	//TraverseLinkList(L);
+	cycle(L);//链表循环化
+	printf("\n开始游戏！从 1 号开始报数，每当报到 %d 者退出序列，余下者继续从 1 开始报数。\n", div);
+	p = L->head->next;
+	printf("出列者序号是：\n");
+	while (L->head->next != L->tail)
+	{
+		for (count = 2; count <= div; count++) //由于每次p都预先置位，故报数从2开始
+		{
+			t = p;  //单链表结点删除需要被删结点的前驱，由t指针指示
+			p = p->next;
+		}
+		visit(p->data);
+		DelNode(L, t);//删除循环链表*t结点的后继节点*p
+		p = t->next;
+	}
+	printf("\n最后的幸存者序号是：%d\n", L->head->next->data);
+	printf("\n游戏结束。");
+	DestroyLinkList(L);
+	system("pause");
+}

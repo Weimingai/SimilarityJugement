@@ -1,0 +1,49 @@
+﻿//0203_140.算法2.18.循环双链表的插入.c
+#include <stdio.h>
+#define ElemFormat 1  //数据类型分类，用户类型ElemType为整型，故选1
+typedef int ElemType;
+#include "应用数据结构预定义.h"
+#include "算法2.x.双链表.h"
+
+void main(void)
+{
+	int num, low, up, i;
+	ElemType e;
+	char choice[2];
+	DLinkList *L = NULL;//定义链表名称
+	srand((unsigned)time(0));
+	L = InitDLinkList(L);	//初始化空表
+	printf("双链表的数据插入演示\n\n");
+	printf("是否构建循环双链表？（y/n）");
+	scanf("%1s", choice);
+	if ((choice[0] == 'y') || (choice[0] == 'Y')) cycle(L);
+	printf("随机生成若干个链表元素，请输入要生成的元素个数：");
+	scanf("%d", &num);
+	printf("\n请输入要生成的元素值（整数）范围。\n下限：");
+	scanf("%d", &low);
+	printf("上限：");
+	scanf("%d", &up);
+	for (i = 1; i <= num; i++) InsDLinkList(L, i, rand() % (up - low + 1) + low);
+	printf("\n双链表L中的所有元素为：\n");
+	TraverseDLinkList(L);
+	printf("\n\n是否在双链表中插入元素？（y/n）");
+	scanf("%1s", choice);
+	while ((choice[0] == 'y') || (choice[0] == 'Y'))
+	{
+		printf("请输入待插入的元素值：");
+		while(!scanf("%d", &num))
+			while (getchar() != '\n'); //输入不合法，则过滤掉非法字符，然后重新输入
+		printf("请输入待插入的位置 i（在其之前插入）：");
+		while (!scanf("%d", &i))
+			while (getchar() != '\n');
+		InsDLinkList(L, i, num); //在第i个结点前插入num
+		while (getchar() != '\n'); //过滤键盘缓冲区中的无效输入
+		printf("\n双链表L中的所有元素为：\n");
+		TraverseDLinkList(L);
+		printf("\n\n是否继续插入元素？（y/n）");
+		scanf("%1s", choice);
+	}
+	printf("\n程序结束。");
+	L = DestroyDLinkList(L);
+	system("pause");
+}

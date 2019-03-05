@@ -1,0 +1,88 @@
+/* 1504_040.位字段和按位运算符.c */
+#include <stdio.h>
+#include <stdbool.h>
+#include <limits.h>
+enum { solid, dotted, dashed }; /* 边框线样式 */
+enum { black, red, green, yellow, blue, magenta, cyan, white }; /* 颜色值 */
+enum { OPAQUE = 0x1, FILL_BLUE = 0x8, FILL_GREEN = 0x4, FILL_RED = 0x2, FILL_MASK = 0xE, BORDER = 0x100, BORDER_BLUE = 0x800, BORDER_GREEN = 0x400, BORDER_RED = 0x200, BORDER_MASK = 0xE00, B_SOLID = 0, B_DOTTED = 0x1000, B_DASHED = 0x2000, STYLE_MASK = 0x3000 };
+const char * colors[8] = { "黑色", "红色", "绿色", "黄色", "蓝色", "紫色", "青色", "白色" };
+struct box_props
+{
+	unsigned int opaque : 1;
+	unsigned int fill_color : 3;
+	unsigned int : 4;
+	unsigned int show_border : 1;
+	unsigned int border_color : 3;
+	unsigned int border_style : 2;
+	unsigned int : 2;
+};
+union Views /* 把数据看作结构或短整型的变量 */
+{
+	struct box_props st_view;
+	unsigned short us_view;
+};
+void show_settings_s(const struct box_props *);
+void show_settings_u(unsigned short);
+char * itobs(int, char *);
+void main(void)
+{
+	/* 创建Views联合变量box，并初始化其结构成员 */
+	union Views box = { true, yellow, true, green, dashed };
+	char bin_str[CHAR_BIT * sizeof(unsigned int) + 1];
+	printf("初始化的方框状态是：%d\n", sizeof(box));
+	show_settings_s(&box.st_view);
+	printf("方框参数采用unsigned int视图：\n");
+	show_settings_u(box.us_view);
+	printf("box变量中的二进制位是：\n%s\n", itobs(box.us_view, bin_str));
+	box.us_view &= ~FILL_MASK; /* 填充色位清零 */
+	box.us_view |= (FILL_BLUE | FILL_GREEN); /* 重置填充色 */
+	box.us_view ^= OPAQUE; /* 切换是否透明的位 */
+	box.us_view |= BORDER_RED; /* 错误的方法 */
+	box.us_view &= ~STYLE_MASK; /* 样式位清零 */
+	box.us_view |= B_DOTTED; /* 把样式设置为点 */
+	printf("\n修改后的方框参数是：\n");
+	show_settings_s(&box.st_view);
+	printf("方框参数采用unsigned int视图：\n");
+	show_settings_u(box.us_view);
+	printf("box变量中的二进制位是：\n%s\n\n", itobs(box.us_view, bin_str));
+	printf("程序结束。");
+	system("pause");
+}
+void show_settings_s(const struct box_props *pb)
+{
+	printf("此方框为%s。\n", pb->opaque == true ? "不透明" : "透明");
+	printf("填充色是%s。\n", colors[pb->fill_color]);
+	printf("框边界为%s。\n", pb->show_border == true ? "可见" : "不可见");
+	printf("边框色是%s。\n", colors[pb->border_color]);
+	printf("框线型为");
+	switch (pb->border_style)
+	{
+	case solid: printf("实线。\n"); break;
+	case dotted:printf("点线。\n"); break;
+	case dashed:printf("虚线。\n"); break;
+	default:printf("未知线型。\n");
+	}
+}
+void show_settings_u(unsigned short us)
+{
+	printf("此方框为%s。\n", (us & OPAQUE) == OPAQUE ? "不透明" : "透明");
+	printf("填充色是%s。\n", colors[(us >> 1) & 07]);
+	printf("框边界为%s。\n", (us & BORDER) == BORDER ? "可见" : "不可见");
+	printf("边框色是%s。\n", colors[(us >> 9) & 07]);
+	printf("框线型为");
+	switch (us & STYLE_MASK)
+	{
+	case B_SOLID : printf("实线。\n"); break;
+	case B_DOTTED: printf("点线。\n"); break;
+	case B_DASHED: printf("虚线。\n"); break;
+	default      : printf("未知线型。\n");
+	}
+}
+char * itobs(int n, char * ps)
+{
+	int i;
+	const static int size = CHAR_BIT * sizeof(int);
+	for (i = size - 1; i >= 0; i--, n >>= 1) ps[i] = (01 & n) + '0';
+	ps[size] = '\0';
+	return ps;
+}
